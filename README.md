@@ -1,6 +1,6 @@
 <h1 align="center">Laravel mail aliyun</h1>
 
-<p align="center">:e-mail: [Aliyun DrirectMail](https://help.aliyun.com/product/29412.html) Transport for Laravel Application.</p>
+<p align="center">:e-mail: <a href="https://help.aliyun.com/product/29412.html">Aliyun DrirectMail</a> Transport for Laravel Application.</p>
 
 ## Installing
 
