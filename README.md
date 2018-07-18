@@ -19,9 +19,9 @@ $ composer require overtrue/laravel-mail-aliyun -vvv
         'key' => env('ALIYUN_ACCESS_KEY_ID'),
         'address_type' => 1, 
         'from_alias' => null,  
-        'click_trace' => 0', 
+        'click_trace' => 0, 
         'version' => '2015-11-23',
-        'region_id' => null',
+        'region_id' => null,
     ],
 ```
 
