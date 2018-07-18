@@ -30,6 +30,7 @@ $ composer require overtrue/laravel-mail-aliyun -vvv
 Set default mail driver:
 
 ```env
+//.env
 MAIL_DRIVER=directmail
 ```
 
