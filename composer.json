@@ -13,5 +13,15 @@
             "name": "overtrue",
             "email": "anzhengchao@gmail.com"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "Overtrue\\LaravelMailAliyun\\": "./src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Overtrue\\LaravelMailAliyun\\DirectMailServiceProvider"]
+        }
+    }
 }
