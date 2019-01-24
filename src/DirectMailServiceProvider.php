@@ -20,15 +20,12 @@ use Illuminate\Support\ServiceProvider;
  */
 class DirectMailServiceProvider extends ServiceProvider
 {
-    /**
-     * Register the service provider.
-     */
-    public function register()
+    public function boot()
     {
         $this->app['swift.transport']->extend('directmail', function () {
             $config = $this->app['config']->get('services.directmail', []);
 
-            return new DirectMailTransport(new Client($config), $config['key'], $config);
+            return new DirectMailTransport(new Client($config), $config['key'], $config['secret'], $config);
         });
     }
 }

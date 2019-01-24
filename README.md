@@ -12,18 +12,15 @@ $ composer require overtrue/laravel-mail-aliyun -vvv
 
 > API documention: https://help.aliyun.com/document_detail/29435.html
 
+*config/services.php*
 ```php
-// config/services.php
-    
     'directmail' => [
         'key' => env('ALIYUN_ACCESS_KEY_ID'),
-        'address_type' => 1, 
-        'from_alias' => null,  
-        'click_trace' => 0, 
-        'version' => '2015-11-23',
-        'region_id' => null,
+        'secret' => env('ALIYUN_ACCESS_KEY_SECRET'),
     ],
 ```
+
+AccessKeyID 和 AccessKeySecret 由阿里云官方颁发给用户的 AccessKey 信息（可以通过阿里云控制台[用户信息管理](https://usercenter.console.aliyun.com/?spm=a2c4g.11186623.2.17.12f2461dHSyXbw#/manage/ak)中查看和管理）.
 
 ## Usage
 
@@ -32,6 +29,9 @@ Set default mail driver:
 ```env
 //.env
 MAIL_DRIVER=directmail
+
+ALIYUN_ACCESS_KEY_ID=  #AccessKeyID
+ALIYUN_ACCESS_KEY_SECRET= #AccessKeySecret
 ```
 
 Please reference the official doc: [Laravel Sending mail](https://laravel.com/docs/5.6/mail#sending-mail)
