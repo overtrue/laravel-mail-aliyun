@@ -24,10 +24,10 @@ AccessKeyID 和 AccessKeySecret 由阿里云官方颁发给用户的 AccessKey �
 
 ## Usage
 
-Set default mail driver:
+Set default mail driver and configuration:
 
-```env
-//.env
+*.env*
+```bash
 MAIL_DRIVER=directmail
 
 ALIYUN_ACCESS_KEY_ID=  #AccessKeyID
