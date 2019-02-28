@@ -22,6 +22,10 @@ $ composer require overtrue/laravel-mail-aliyun -vvv
 
 AccessKeyID 和 AccessKeySecret 由阿里云官方颁发给用户的 AccessKey 信息（可以通过阿里云控制台[用户信息管理](https://usercenter.console.aliyun.com/?spm=a2c4g.11186623.2.17.12f2461dHSyXbw#/manage/ak)中查看和管理）.
 
+## attention  
+
+Please make sure your timestamp is UTC type , if not ,please use function date_default_timezone_set('UTC') before you use date() function 
+
 ## Usage
 
 Set default mail driver and configuration:
@@ -39,3 +43,4 @@ Please reference the official doc: [Laravel Sending mail](https://laravel.com/do
 ## License
 
 MIT
+
