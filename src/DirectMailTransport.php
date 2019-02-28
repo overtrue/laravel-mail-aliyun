@@ -117,6 +117,7 @@ class DirectMailTransport extends Transport
      */
     protected function payload(Swift_Mime_SimpleMessage $message, array $region)
     {
+        date_default_timezone_set('UTC');
         $parameters = array_filter([
             'AccountName' => array_get($this->options, 'from_address', \config('mail.from.address', key($message->getFrom()))),
             'ReplyToAddress' => 'true',
