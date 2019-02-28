@@ -24,7 +24,7 @@ AccessKeyID 和 AccessKeySecret 由阿里云官方颁发给用户的 AccessKey �
 
 ## Attention  
 
-Please make sure your timestamp is UTC type , if not ,please use function date_default_timezone_set('UTC') before you use date() function 
+Please make sure your timestamp is UTC type , if not ,please use function ```date_default_timezone_set('UTC')``` before you use date() function 
 
 ## Usage
 
