@@ -15,8 +15,6 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Class DirectMailServiceProvider.
- *
- * @author overtrue <i@overtrue.me>
  */
 class DirectMailServiceProvider extends ServiceProvider
 {

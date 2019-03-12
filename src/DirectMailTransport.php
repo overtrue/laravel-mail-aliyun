@@ -12,18 +12,16 @@ namespace Overtrue\LaravelMailAliyun;
 
 use GuzzleHttp\ClientInterface;
 use Illuminate\Mail\Transport\Transport;
+use Illuminate\Support\Arr;
+use Psr\Http\Message\ResponseInterface;
 use Swift_Mime_SimpleMessage;
 
 /**
- * Class Transport.
- *
- * @author overtrue <i@overtrue.me>
+ * Class DirectMailTransport
  */
 class DirectMailTransport extends Transport
 {
     /**
-     * Guzzle client instance.
-     *
      * @var \GuzzleHttp\ClientInterface
      */
     protected $client;
@@ -46,7 +44,7 @@ class DirectMailTransport extends Transport
     /**
      * @var string
      */
-    protected $regons = [
+    protected $regions = [
         'cn-hangzhou' => [
             'id' => 'cn-hangzhou',
             'url' => 'https://dm.aliyuncs.com',
@@ -97,8 +95,8 @@ class DirectMailTransport extends Transport
 
         $message->setBcc([]);
 
-        $regionId = \array_get($this->options, 'region_id', 'cn-hangzhou');
-        $region = $this->regons[$regionId];
+        $regionId = Arr::get($this->options, 'region_id', 'cn-hangzhou');
+        $region = $this->regions[$regionId];
 
         $this->client->post($region['url'], ['form_params' => $this->payload($message, $region)]);
 
@@ -118,14 +116,14 @@ class DirectMailTransport extends Transport
     protected function payload(Swift_Mime_SimpleMessage $message, array $region)
     {
         $parameters = array_filter([
-            'AccountName' => array_get($this->options, 'from_address', \config('mail.from.address', key($message->getFrom()))),
+            'AccountName' => Arr::get($this->options, 'from_address', \config('mail.from.address', key($message->getFrom()))),
             'ReplyToAddress' => 'true',
-            'AddressType' => array_get($this->options, 'address_type', 1),
+            'AddressType' => Arr::get($this->options, 'address_type', 1),
             'ToAddress' => $this->getTo($message),
-            'FromAlias' => array_get($this->options, 'from_alias'),
+            'FromAlias' => Arr::get($this->options, 'from_alias'),
             'Subject' => $message->getSubject(),
             'HtmlBody' => $message->getBody(),
-            'ClickTrace' => array_get($this->options, 'click_trace', 0),
+            'ClickTrace' => Arr::get($this->options, 'click_trace', 0),
             'Format' => 'json',
             'Action' => 'SingleSendMail',
             'Version' => $region['version'],
@@ -177,22 +175,18 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * Get the transmission ID from the response.
+     * @param \Psr\Http\Message\ResponseInterface $response
      *
-     * @param \GuzzleHttp\Psr7\Response $response
-     *
-     * @return string
+     * @return mixed
      */
-    protected function getTransmissionId($response)
+    protected function getTransmissionId(ResponseInterface $response)
     {
-        return object_get(
-            json_decode($response->getBody()->getContents()), 'RequestId'
+        return Arr::get(
+            json_decode($response->getBody()->getContents(), true), 'RequestId'
         );
     }
 
     /**
-     * Get all of the contacts for the message.
-     *
      * @param \Swift_Mime_SimpleMessage $message
      *
      * @return array
@@ -205,8 +199,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * Get the API key being used by the transport.
-     *
      * @return string
      */
     public function getKey()
@@ -215,8 +207,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * Get the API key being used by the transport.
-     *
      * @return string
      */
     public function getSecret()
@@ -225,8 +215,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * Set the API key being used by the transport.
-     *
      * @param string $key
      *
      * @return string
@@ -237,7 +225,7 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * Get the API key being used by the transport.
+     * @param string $secret
      *
      * @return string
      */
