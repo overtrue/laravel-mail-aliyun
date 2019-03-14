@@ -128,7 +128,7 @@ class DirectMailTransport extends Transport
             'Action' => 'SingleSendMail',
             'Version' => $region['version'],
             'AccessKeyId' => $this->getKey(),
-            'Timestamp' => date('Y-m-d\TH:i:s\Z'),
+            'Timestamp' => now()->toIso8601ZuluString(),
             'SignatureMethod' => 'HMAC-SHA1',
             'SignatureVersion' => '1.0',
             'SignatureNonce' => \uniqid(),
