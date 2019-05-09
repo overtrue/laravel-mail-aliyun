@@ -17,6 +17,9 @@ $ composer require overtrue/laravel-mail-aliyun -vvv
     'directmail' => [
         'key' => env('ALIYUN_ACCESS_KEY_ID'),
         'secret' => env('ALIYUN_ACCESS_KEY_SECRET'),
+        'region_id' => env('ALIYUN_REGION_ID'),
+        'from_address' => env('ALIYUN_FROM_ADDRESS'),
+        'from_alias' => env('ALIYUN_FROM_ALIAS'),
     ],
 ```
 
@@ -32,6 +35,9 @@ MAIL_DRIVER=directmail
 
 ALIYUN_ACCESS_KEY_ID=  #AccessKeyID
 ALIYUN_ACCESS_KEY_SECRET= #AccessKeySecret
+ALIYUN_REGION_ID= #RegionID: cn-hangzhou, ap-southeast-1, ap-southeast-2
+ALIYUN_FROM_ADDRESS= #FromAddress
+ALIYUN_FROM_ALIAS= #FromAlias
 ```
 
 Please reference the official doc: [Laravel Sending mail](https://laravel.com/docs/5.6/mail#sending-mail)
