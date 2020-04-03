@@ -25,7 +25,7 @@ class DirectMailServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app['swift.transport']->extend('directmail', function () {
+        $this->app['mail.manager']->extend('directmail', function () {
             $config = $this->app['config']->get('services.directmail', []);
 
             return new DirectMailTransport(new Client($config), $config['key'], $config);

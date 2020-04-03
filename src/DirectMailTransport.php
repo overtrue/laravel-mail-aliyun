@@ -128,7 +128,7 @@ class DirectMailTransport extends Transport
     {
         \ksort($parameters);
 
-        $signString = rawurlencode('POST&/&'.http_build_query($parameters, null, '&', PHP_QUERY_RFC3986));
+        $signString = rawurlencode('POST&/&' . http_build_query($parameters, null, '&', PHP_QUERY_RFC3986));
 
         return base64_encode(hash_hmac('sha1', $signString, $this->getKey(), true));
     }
@@ -143,7 +143,7 @@ class DirectMailTransport extends Transport
     protected function getTo(Swift_Mime_SimpleMessage $message)
     {
         return collect($this->allContacts($message))->map(function ($display, $address) {
-            return $display ? $display." <{$address}>" : $address;
+            return $display ? $display . " <{$address}>" : $address;
         })->values()->implode(',');
     }
 
@@ -157,7 +157,8 @@ class DirectMailTransport extends Transport
     protected function getTransmissionId($response)
     {
         return object_get(
-            json_decode($response->getBody()->getContents()), 'RequestId'
+            json_decode($response->getBody()->getContents()),
+            'RequestId'
         );
     }
 
@@ -171,7 +172,9 @@ class DirectMailTransport extends Transport
     protected function allContacts(Swift_Mime_SimpleMessage $message)
     {
         return array_merge(
-            (array) $message->getTo(), (array) $message->getCc(), (array) $message->getBcc()
+            (array) $message->getTo(),
+            (array) $message->getCc(),
+            (array) $message->getBcc()
         );
     }
 
