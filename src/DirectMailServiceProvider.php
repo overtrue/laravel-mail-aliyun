@@ -15,20 +15,15 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Class DirectMailServiceProvider.
- *
- * @author overtrue <i@overtrue.me>
  */
 class DirectMailServiceProvider extends ServiceProvider
 {
-    /**
-     * Register the service provider.
-     */
-    public function register()
+    public function boot()
     {
         $this->app['mail.manager']->extend('directmail', function () {
             $config = $this->app['config']->get('services.directmail', []);
 
-            return new DirectMailTransport(new Client($config), $config['key'], $config);
+            return new DirectMailTransport(new Client($config), $config['key'], $config['secret'], $config);
         });
     }
 }
