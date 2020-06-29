@@ -3,7 +3,7 @@
     "description": "Aliyun DrirectMail Transport for Laravel Application.",
     "type": "library",
     "require": {
-        "guzzlehttp/guzzle": "^6.3",
+        "guzzlehttp/guzzle": "^6.3 || ^7.0",
         "laravel/framework": "^7.0",
         "swiftmailer/swiftmailer": "^6.1"
     },
