@@ -122,7 +122,6 @@ class DirectMailTransport extends Transport
             'ToAddress' => $this->getTo($message),
             'FromAlias' => Arr::get($this->options, 'from_alias'),
             'Subject' => $message->getSubject(),
-            'HtmlBody' => $message->getBody(),
             'ClickTrace' => Arr::get($this->options, 'click_trace', 0),
             'Format' => 'json',
             'Action' => 'SingleSendMail',
@@ -134,6 +133,9 @@ class DirectMailTransport extends Transport
             'SignatureNonce' => \uniqid(),
             'RegionId' => $region['id'],
         ]);
+
+        $bodyName = $this->getBodyName($message);
+        $parameters[$bodyName] = $message->getBody();
 
         $parameters['Signature'] = $this->makeSignature($parameters);
 
@@ -155,9 +157,9 @@ class DirectMailTransport extends Transport
             $encoded[] = \sprintf('%s=%s', rawurlencode($key), rawurlencode($value));
         }
 
-        $signString = 'POST&%2F&'.rawurlencode(\join('&', $encoded));
+        $signString = 'POST&%2F&' . rawurlencode(\join('&', $encoded));
 
-        return base64_encode(hash_hmac('sha1', $signString, $this->getSecret().'&', true));
+        return base64_encode(hash_hmac('sha1', $signString, $this->getSecret() . '&', true));
     }
 
     /**
@@ -235,5 +237,15 @@ class DirectMailTransport extends Transport
     public function setSecret(string $secret)
     {
         return $this->secret = $secret;
+    }
+
+    /**
+     * @param Swift_Mime_SimpleMessage $message
+     *
+     * @return string
+     */
+    protected function getBodyName(Swift_Mime_SimpleMessage $message)
+    {
+        return $message->getBodyContentType() == 'text/plain' ? 'TextBody' : 'HtmlBody';
     }
 }
