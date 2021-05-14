@@ -116,11 +116,11 @@ class DirectMailTransport extends Transport
     protected function payload(Swift_Mime_SimpleMessage $message, array $region)
     {
         $parameters = array_filter([
-            'AccountName' => Arr::get($this->options, 'from_address', \config('mail.from.address', key($message->getFrom()))),
+            'AccountName' => Arr::get($this->options, 'from_address', key($message->getFrom())),
             'ReplyToAddress' => 'true',
             'AddressType' => Arr::get($this->options, 'address_type', 1),
             'ToAddress' => $this->getTo($message),
-            'FromAlias' => Arr::get($this->options, 'from_alias'),
+            'FromAlias' => Arr::get($this->options, 'from_alias', current($message->getFrom())),
             'Subject' => $message->getSubject(),
             'ClickTrace' => Arr::get($this->options, 'click_trace', 0),
             'Format' => 'json',
