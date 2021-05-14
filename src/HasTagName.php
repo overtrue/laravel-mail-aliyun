@@ -3,20 +3,16 @@
 
 namespace Overtrue\LaravelMailAliyun;
 
+use Illuminate\Mail\Mailable;
 use Swift_Mime_SimpleMessage;
 
 /**
  * Trait HasTagName
+ *
+ * Can be used by mailable to set tag name
  */
 trait HasTagName
 {
-    /**
-     * The callbacks for the message.
-     *
-     * @var array
-     */
-    public $callbacks = [];
-
     /**
      * @param $tagName
      *
@@ -36,7 +32,9 @@ trait HasTagName
      */
     public function tagName($tagName)
     {
-        $this->callbacks['X-Tag-Name'] = $this->getMailableCallback($tagName);
+        if ($this instanceof Mailable) {
+            $this->callbacks['X-Tag-Name'] = $this->getMailableCallback($tagName);
+        }
         return $this;
     }
 }
