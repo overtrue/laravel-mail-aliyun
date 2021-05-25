@@ -40,6 +40,19 @@ ALIYUN_FROM_ADDRESS= #FromAddress
 ALIYUN_FROM_ALIAS= #FromAlias
 ```
 
+*TagName*
+```php
+use Overtrue\LaravelMailAliyun\HasTagName;
+class VerifyMail extend Mailable{
+    use HasTagName;
+    public function build()
+    {
+        $this->tagName('alreadyDefinedTag');
+        return $this->text('mails.verify');
+    }
+}
+```
+
 Please reference the official doc: [Laravel Sending mail](https://laravel.com/docs/5.6/mail#sending-mail)
 
 ## PHP 扩展包开发

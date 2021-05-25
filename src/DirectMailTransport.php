@@ -132,6 +132,7 @@ class DirectMailTransport extends Transport
             'SignatureVersion' => '1.0',
             'SignatureNonce' => \uniqid(),
             'RegionId' => $region['id'],
+            'TagName' => $this->getTagName($message)
         ]);
 
         $bodyName = $this->getBodyName($message);
@@ -247,5 +248,15 @@ class DirectMailTransport extends Transport
     protected function getBodyName(Swift_Mime_SimpleMessage $message)
     {
         return $message->getBodyContentType() == 'text/plain' ? 'TextBody' : 'HtmlBody';
+    }
+
+    /**
+     * @param Swift_Mime_SimpleMessage $message
+     *
+     * @return string|null
+     */
+    protected function getTagName(Swift_Mime_SimpleMessage $message)
+    {
+        return $message->getHeaders()->has('X-Tag-Name') === false ? null : $message->getHeaders()->get('X-Tag-Name')->getFieldBodyModel();
     }
 }
