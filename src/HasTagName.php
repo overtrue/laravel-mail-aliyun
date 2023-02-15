@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Overtrue\LaravelMailAliyun;
 
 use Illuminate\Mail\Mailable;
@@ -14,8 +13,7 @@ use Swift_Mime_SimpleMessage;
 trait HasTagName
 {
     /**
-     * @param string $tagName
-     *
+     * @param  string  $tagName
      * @return \Closure
      */
     protected function getMailableCallback($tagName)
@@ -26,8 +24,7 @@ trait HasTagName
     }
 
     /**
-     * @param string $tagName
-     *
+     * @param  string  $tagName
      * @return $this
      */
     public function tagName($tagName)
@@ -35,6 +32,7 @@ trait HasTagName
         if ($this instanceof Mailable) {
             $this->withSwiftMessage($this->getMailableCallback($tagName));
         }
+
         return $this;
     }
 }

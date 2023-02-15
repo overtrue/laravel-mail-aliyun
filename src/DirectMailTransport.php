@@ -64,11 +64,6 @@ class DirectMailTransport extends Transport
 
     /**
      * DirectMailTransport constructor.
-     *
-     * @param \GuzzleHttp\ClientInterface $client
-     * @param string                      $key
-     * @param string                      $secret
-     * @param array                       $options
      */
     public function __construct(ClientInterface $client, string $key, string $secret, array $options = [])
     {
@@ -84,9 +79,7 @@ class DirectMailTransport extends Transport
      * Recipient/sender data will be retrieved from the Message API.
      * The return value is the number of recipients who were accepted for delivery.
      *
-     * @param Swift_Mime_SimpleMessage $message
-     * @param string[]                 $failedRecipients An array of failures by-reference
-     *
+     * @param  string[]  $failedRecipients An array of failures by-reference
      * @return int
      */
     public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
@@ -108,8 +101,6 @@ class DirectMailTransport extends Transport
     /**
      * Get the HTTP payload for sending the message.
      *
-     * @param \Swift_Mime_SimpleMessage $message
-     * @param array                     $region
      *
      * @return array
      */
@@ -132,7 +123,7 @@ class DirectMailTransport extends Transport
             'SignatureVersion' => '1.0',
             'SignatureNonce' => \uniqid(),
             'RegionId' => $region['id'],
-            'TagName' => $this->getTagName($message)
+            'TagName' => $this->getTagName($message),
         ]);
 
         $bodyName = $this->getBodyName($message);
@@ -144,8 +135,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param array $parameters
-     *
      * @return string
      */
     protected function makeSignature(array $parameters)
@@ -158,28 +147,25 @@ class DirectMailTransport extends Transport
             $encoded[] = \sprintf('%s=%s', rawurlencode($key), rawurlencode($value));
         }
 
-        $signString = 'POST&%2F&' . rawurlencode(\join('&', $encoded));
+        $signString = 'POST&%2F&'.rawurlencode(\implode('&', $encoded));
 
-        return base64_encode(hash_hmac('sha1', $signString, $this->getSecret() . '&', true));
+        return base64_encode(hash_hmac('sha1', $signString, $this->getSecret().'&', true));
     }
 
     /**
      * Get the "to" payload field for the API request.
      *
-     * @param \Swift_Mime_SimpleMessage $message
      *
      * @return string
      */
     protected function getTo(Swift_Mime_SimpleMessage $message)
     {
         return collect($this->allContacts($message))->map(function ($display, $address) {
-            return $display ? $display . " <{$address}>" : $address;
+            return $display ? $display." <{$address}>" : $address;
         })->values()->implode(',');
     }
 
     /**
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
      * @return mixed
      */
     protected function getTransmissionId(ResponseInterface $response)
@@ -191,8 +177,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param \Swift_Mime_SimpleMessage $message
-     *
      * @return array
      */
     protected function allContacts(Swift_Mime_SimpleMessage $message)
@@ -221,8 +205,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param string $key
-     *
      * @return string
      */
     public function setKey(string $key)
@@ -231,8 +213,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param string $secret
-     *
      * @return string
      */
     public function setSecret(string $secret)
@@ -241,8 +221,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param Swift_Mime_SimpleMessage $message
-     *
      * @return string
      */
     protected function getBodyName(Swift_Mime_SimpleMessage $message)
@@ -251,8 +229,6 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @param Swift_Mime_SimpleMessage $message
-     *
      * @return string|null
      */
     protected function getTagName(Swift_Mime_SimpleMessage $message)
