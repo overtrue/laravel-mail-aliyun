@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "guzzlehttp/guzzle": "^7.0",
-        "laravel/framework": "^9.0|^10.0",
+        "laravel/framework": "^9.0|^10.0|^11.0",
         "swiftmailer/swiftmailer": "^6.1"
     },
     "license": "MIT",
