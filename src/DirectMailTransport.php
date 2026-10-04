@@ -11,18 +11,25 @@
 namespace Overtrue\LaravelMailAliyun;
 
 use GuzzleHttp\ClientInterface;
-use Illuminate\Mail\Transport\Transport;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ResponseInterface;
-use Swift_Mime_SimpleMessage;
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\Exception\TransportException;
+use Symfony\Component\Mailer\SentMessage;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Message;
+use Symfony\Component\Mime\MessageConverter;
 
 /**
  * Class DirectMailTransport
  */
-class DirectMailTransport extends Transport
+class DirectMailTransport extends AbstractTransport
 {
     /**
-     * @var \GuzzleHttp\ClientInterface
+     * @var ClientInterface
      */
     protected $client;
 
@@ -67,35 +74,59 @@ class DirectMailTransport extends Transport
      */
     public function __construct(ClientInterface $client, string $key, string $secret, array $options = [])
     {
+        parent::__construct();
+
         $this->key = $key;
         $this->secret = $secret;
         $this->client = $client;
         $this->options = $options;
     }
 
-    /**
-     * Send the given Message.
-     *
-     * Recipient/sender data will be retrieved from the Message API.
-     * The return value is the number of recipients who were accepted for delivery.
-     *
-     * @param  string[]  $failedRecipients An array of failures by-reference
-     * @return int
-     */
-    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
+    protected function doSend(SentMessage $message): void
     {
-        $this->beforeSendPerformed($message);
+        $original = $message->getOriginalMessage();
 
-        $message->setBcc([]);
+        if (! $original instanceof Message) {
+            throw new TransportException('This DirectMail transport requires a structured MIME message. Use SMTP for raw messages.');
+        }
 
-        $regionId = Arr::get($this->options, 'region_id', 'cn-hangzhou');
+        $email = MessageConverter::toEmail($original);
+
+        // Do not silently discard unsupported content or expose blind recipients.
+        if ($email->getBcc() || $email->getAttachments()) {
+            throw new TransportException('This DirectMail transport does not support BCC or attachments. Use SMTP instead.');
+        }
+
+        $visibleRecipients = array_map(static function (Address $address) {
+            return $address->getAddress();
+        }, array_merge($email->getTo(), $email->getCc()));
+
+        foreach ($message->getEnvelope()->getRecipients() as $recipient) {
+            if (! in_array($recipient->getAddress(), $visibleRecipients, true)) {
+                throw new TransportException('This DirectMail transport cannot expose envelope-only recipients in ToAddress. Use SMTP instead.');
+            }
+        }
+
+        $regionId = Arr::get($this->options, 'region_id') ?: 'cn-hangzhou';
+
+        if (! isset($this->regions[$regionId])) {
+            throw new TransportException('Unsupported DirectMail region: '.$regionId);
+        }
+
         $region = $this->regions[$regionId];
 
-        $this->client->post($region['url'], ['form_params' => $this->payload($message, $region)]);
+        try {
+            $this->client->post($region['url'], [
+                'form_params' => $this->payload($email, $region, $message->getEnvelope()),
+            ]);
+        } catch (GuzzleException $exception) {
+            throw new TransportException('Unable to send mail via DirectMail.', 0, $exception);
+        }
+    }
 
-        $this->sendPerformed($message);
-
-        return $this->numberOfRecipients($message);
+    public function __toString(): string
+    {
+        return 'directmail';
     }
 
     /**
@@ -104,14 +135,16 @@ class DirectMailTransport extends Transport
      *
      * @return array
      */
-    protected function payload(Swift_Mime_SimpleMessage $message, array $region)
+    protected function payload(Email $message, array $region, Envelope $envelope)
     {
+        $from = $message->getFrom()[0] ?? $envelope->getSender();
+
         $parameters = array_filter([
-            'AccountName' => Arr::get($this->options, 'from_address', key($message->getFrom())),
+            'AccountName' => Arr::get($this->options, 'from_address') ?: $from->getAddress(),
             'ReplyToAddress' => 'true',
             'AddressType' => Arr::get($this->options, 'address_type', 1),
-            'ToAddress' => $this->getTo($message),
-            'FromAlias' => Arr::get($this->options, 'from_alias', current($message->getFrom())),
+            'ToAddress' => $this->getTo($envelope),
+            'FromAlias' => Arr::get($this->options, 'from_alias') ?: $from->getName(),
             'Subject' => $message->getSubject(),
             'ClickTrace' => Arr::get($this->options, 'click_trace', 0),
             'Format' => 'json',
@@ -124,10 +157,20 @@ class DirectMailTransport extends Transport
             'SignatureNonce' => \uniqid(),
             'RegionId' => $region['id'],
             'TagName' => $this->getTagName($message),
-        ]);
+        ], static function ($value) {
+            return $value !== null && $value !== '';
+        });
 
-        $bodyName = $this->getBodyName($message);
-        $parameters[$bodyName] = $message->getBody();
+        foreach (['TextBody' => $message->getTextBody(), 'HtmlBody' => $message->getHtmlBody()] as $name => $body) {
+            if ($body !== null) {
+                if (is_resource($body)) {
+                    rewind($body);
+                    $body = stream_get_contents($body);
+                }
+
+                $parameters[$name] = $body;
+            }
+        }
 
         $parameters['Signature'] = $this->makeSignature($parameters);
 
@@ -158,11 +201,11 @@ class DirectMailTransport extends Transport
      *
      * @return string
      */
-    protected function getTo(Swift_Mime_SimpleMessage $message)
+    protected function getTo(Envelope $envelope)
     {
-        return collect($this->allContacts($message))->map(function ($display, $address) {
-            return $display ? $display." <{$address}>" : $address;
-        })->values()->implode(',');
+        return implode(',', array_map(static function (Address $address) {
+            return $address->getAddress();
+        }, $envelope->getRecipients()));
     }
 
     /**
@@ -173,18 +216,6 @@ class DirectMailTransport extends Transport
         return object_get(
             json_decode($response->getBody()->getContents()),
             'RequestId'
-        );
-    }
-
-    /**
-     * @return array
-     */
-    protected function allContacts(Swift_Mime_SimpleMessage $message)
-    {
-        return array_merge(
-            (array) $message->getTo(),
-            (array) $message->getCc(),
-            (array) $message->getBcc()
         );
     }
 
@@ -221,18 +252,10 @@ class DirectMailTransport extends Transport
     }
 
     /**
-     * @return string
-     */
-    protected function getBodyName(Swift_Mime_SimpleMessage $message)
-    {
-        return $message->getBodyContentType() == 'text/plain' ? 'TextBody' : 'HtmlBody';
-    }
-
-    /**
      * @return string|null
      */
-    protected function getTagName(Swift_Mime_SimpleMessage $message)
+    protected function getTagName(Email $message)
     {
-        return $message->getHeaders()->has('X-Tag-Name') === false ? null : $message->getHeaders()->get('X-Tag-Name')->getFieldBodyModel();
+        return $message->getHeaders()->has('X-Tag-Name') === false ? null : $message->getHeaders()->get('X-Tag-Name')->getBody();
     }
 }
