@@ -33,7 +33,7 @@ Set default mail driver and configuration:
 
 *.env*
 ```bash
-MAIL_DRIVER=directmail
+MAIL_MAILER=directmail
 
 ALIYUN_ACCESS_KEY_ID=  #AccessKeyID
 ALIYUN_ACCESS_KEY_SECRET= #AccessKeySecret
@@ -42,10 +42,24 @@ ALIYUN_FROM_ADDRESS= #FromAddress
 ALIYUN_FROM_ALIAS= #FromAlias
 ```
 
+Add a mailer in `config/mail.php`:
+
+```php
+'mailers' => [
+    'directmail' => ['transport' => 'directmail'],
+],
+```
+
+This version supports Laravel 13 and PHP 8.3+ using Symfony Mailer. To and CC recipients are
+sent through the API's `ToAddress` field; the API does not preserve a separate CC
+header. This transport rejects BCC, envelope-only recipients absent from To/CC headers,
+and attachments rather than silently dropping them or exposing blind recipients. Use SMTP when these features are needed.
+Custom message callbacks should use `withSymfonyMessage()` and Symfony's `Email`.
+
 *TagName*
 ```php
 use Overtrue\LaravelMailAliyun\HasTagName;
-class VerifyMail extend Mailable{
+class VerifyMail extends Mailable{
     use HasTagName;
     public function build()
     {
@@ -55,7 +69,7 @@ class VerifyMail extend Mailable{
 }
 ```
 
-Please reference the official doc: [Laravel Sending mail](https://laravel.com/docs/5.6/mail#sending-mail)
+Please reference the official doc: [Laravel Sending mail](https://laravel.com/docs/13.x/mail#sending-mail)
 
 ## :heart: Sponsor me 
 
@@ -79,3 +93,12 @@ Many thanks to Jetbrains for kindly providing a license for me to work on this a
 ## License
 
 MIT
+
+## Tests
+
+```shell
+composer install
+composer test
+```
+
+The test suite uses a mocked HTTP handler and does not send real email.

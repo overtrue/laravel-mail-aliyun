@@ -1,0 +1,33 @@
+name: Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+        dependencies: ['highest']
+        include:
+          - php: '8.3'
+            dependencies: 'lowest'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, xml, xmlwriter
+          coverage: none
+      - if: matrix.dependencies == 'highest'
+        run: composer update --prefer-dist --no-interaction
+      - if: matrix.dependencies == 'lowest'
+        run: composer update --prefer-dist --prefer-lowest --prefer-stable --no-interaction
+      - run: composer validate --strict
+      - run: composer test
+      - run: composer lint
+      - run: composer audit

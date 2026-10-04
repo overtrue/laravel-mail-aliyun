@@ -3,7 +3,7 @@
 namespace Overtrue\LaravelMailAliyun;
 
 use Illuminate\Mail\Mailable;
-use Swift_Mime_SimpleMessage;
+use Symfony\Component\Mime\Email;
 
 /**
  * Trait HasTagName
@@ -18,7 +18,7 @@ trait HasTagName
      */
     protected function getMailableCallback($tagName)
     {
-        return function (Swift_Mime_SimpleMessage $message) use ($tagName) {
+        return function (Email $message) use ($tagName) {
             $message->getHeaders()->addTextHeader('X-Tag-Name', $tagName);
         };
     }
@@ -30,7 +30,7 @@ trait HasTagName
     public function tagName($tagName)
     {
         if ($this instanceof Mailable) {
-            $this->withSwiftMessage($this->getMailableCallback($tagName));
+            $this->withSymfonyMessage($this->getMailableCallback($tagName));
         }
 
         return $this;
